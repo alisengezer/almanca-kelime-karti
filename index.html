@@ -1,0 +1,1054 @@
+!DOCTYPE html
+html lang=tr class=h-full
+head
+  meta charset=UTF-8
+  meta name=viewport content=width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover
+  titleWortSwipe  Almanca Kelime Ezberlemetitle
+  
+  script src=httpscdn.tailwindcss.comscript
+  link rel=preconnect href=httpsfonts.googleapis.com
+  link rel=preconnect href=httpsfonts.gstatic.com crossorigin
+  link href=httpsfonts.googleapis.comcss2family=Outfitwght@400;500;600;700;800&family=Plus+Jakarta+Sanswght@400;500;600;700&display=swap rel=stylesheet
+  script src=httpsunpkg.com@phosphor-iconswebscript
+
+  script
+    tailwind.config = {
+      darkMode 'class',
+      theme {
+        extend {
+          fontFamily {
+            sans ['Plus Jakarta Sans', 'sans-serif'],
+            display ['Outfit', 'sans-serif'],
+          },
+          boxShadow {
+            'card' '0 20px 35px -10px rgba(0, 0, 0, 0.12), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            'card-dark' '0 25px 45px -12px rgba(0, 0, 0, 0.6)',
+          }
+        }
+      }
+    }
+  script
+
+  style
+    .perspective-container {
+      perspective 1200px;
+      -webkit-perspective 1200px;
+    }
+    .card-flipper {
+      position relative;
+      width 100%;
+      height 100%;
+      transform-style preserve-3d;
+      -webkit-transform-style preserve-3d;
+      transition transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .card-flipper.is-flipped {
+      transform rotateY(180deg);
+      -webkit-transform rotateY(180deg);
+    }
+    .face {
+      position absolute;
+      inset 0;
+      width 100%;
+      height 100%;
+      backface-visibility hidden;
+      -webkit-backface-visibility hidden;
+      border-radius 1.5rem;
+    }
+    .face-back {
+      transform rotateY(180deg);
+      -webkit-transform rotateY(180deg);
+    }
+    .touch-none-all {
+      touch-action none;
+      -webkit-touch-callout none;
+      user-select none;
+      -webkit-user-select none;
+    }
+    @keyframes audioPulse {
+      0%, 100% { transform scale(1); }
+      50% { transform scale(1.15); }
+    }
+    .audio-playing { animation audioPulse 0.8s ease-in-out infinite; }
+  style
+head
+body class=bg-slate-100 darkbg-slate-950 text-slate-900 darktext-slate-100 min-h-screen flex flex-col justify-between font-sans transition-colors duration-300 overflow-x-hidden selectionbg-rose-500 selectiontext-white
+
+  !-- ================= TOP HEADER ================= --
+  header class=w-full max-w-md mx-auto px-4 pt-3 pb-2 flex items-center justify-between z-20 shrink-0
+    div class=flex items-center space-x-2
+      button id=btn-header-back class=hidden w-9 h-9 items-center justify-center rounded-xl bg-white darkbg-slate-800 text-slate-700 darktext-slate-200 shadow-sm border border-slate-20070 darkborder-slate-70070 hoverbg-slate-50 darkhoverbg-slate-700 transition activescale-95 title=Konulara Dön
+        i class=ph-bold ph-arrow-left text-lgi
+      button
+
+      div class=w-9 h-9 rounded-2xl bg-gradient-to-tr from-rose-500 via-pink-500 to-amber-400 flex items-center justify-center shadow-lg shadow-rose-50025 text-white text-xl
+        i class=ph-bold ph-cardsi
+      div
+      div
+        h1 class=font-display font-extrabold text-lg leading-tight tracking-tight bg-gradient-to-r from-rose-600 via-pink-500 to-amber-500 bg-clip-text text-transparent
+          WortSwipe
+        h1
+        div class=flex items-center gap-1.5 text-[11px] font-medium text-slate-500 darktext-slate-400
+          span class=inline-block w-1.5 h-1.5 rounded-full bg-emerald-500span
+          span id=deck-name-badgeKonu Seçimispan
+        div
+      div
+    div
+
+    !-- Controls --
+    div class=flex items-center space-x-1.5
+      button id=btn-stats class=w-9 h-9 flex items-center justify-center rounded-xl bg-white darkbg-slate-800 text-slate-600 darktext-slate-300 shadow-sm border border-slate-20060 darkborder-slate-70060 hoverbg-slate-50 darkhoverbg-slate-700 transition activescale-95 title=İstatistikler
+        i class=ph-bold ph-chart-bar text-lgi
+      button
+      button id=btn-theme class=w-9 h-9 flex items-center justify-center rounded-xl bg-white darkbg-slate-800 text-slate-600 darktext-slate-300 shadow-sm border border-slate-20060 darkborder-slate-70060 hoverbg-slate-50 darkhoverbg-slate-700 transition activescale-95 title=Görünüm Değiştir
+        i class=ph-bold ph-moon darkhidden text-lgi
+        i class=ph-bold ph-sun hidden darkblock text-lg text-amber-400i
+      button
+    div
+  header
+
+  !-- ================= KATEGORİ PANELİ ================= --
+  section id=category-screen class=w-full max-w-md mx-auto px-4 flex-1 flex flex-col justify-center py-4 z-10
+    div class=mb-4
+      h2 class=text-2xl font-display font-extrabold text-slate-900 darktext-whiteÇalışılacak Konuh2
+      p class=text-xs text-slate-500 darktext-slate-400 mt-1Öğrenmek istediğin kategoriyi seçip pratik yapmaya başla.p
+    div
+
+    div class=grid grid-cols-1 gap-2.5 overflow-y-auto max-h-[68vh] pr-1 id=category-cards-griddiv
+  section
+
+  !-- ================= ÇALIŞMA EKRANI ================= --
+  div id=study-screen class=hidden flex-1 flex-col justify-between w-full
+    section class=w-full max-w-md mx-auto px-4 mb-1 z-10 shrink-0
+      div class=bg-white80 darkbg-slate-90080 backdrop-blur-md rounded-2xl p-2.5 shadow-sm border border-slate-20070 darkborder-slate-80080 flex items-center justify-between text-xs
+        div class=flex items-center gap-1.5
+          div class=w-6 h-6 rounded-lg bg-emerald-100 darkbg-emerald-95060 text-emerald-600 darktext-emerald-400 flex items-center justify-center font-bold
+            i class=ph-bold ph-check text-xsi
+          div
+          div
+            span class=text-slate-400 darktext-slate-500 block text-[9px] uppercase font-semiboldÖğrenilenspan
+            span id=counter-mastered class=font-bold text-slate-800 darktext-slate-1000span
+          div
+        div
+
+        div class=flex items-center gap-1.5
+          div class=w-6 h-6 rounded-lg bg-rose-100 darkbg-rose-95060 text-rose-600 darktext-rose-400 flex items-center justify-center font-bold
+            i class=ph-bold ph-arrows-clockwise text-xsi
+          div
+          div
+            span class=text-slate-400 darktext-slate-500 block text-[9px] uppercase font-semiboldKalan Sıraspan
+            span id=counter-queue class=font-bold text-slate-800 darktext-slate-1000span
+          div
+        div
+
+        div class=flex items-center gap-1.5
+          div class=w-6 h-6 rounded-lg bg-amber-100 darkbg-amber-95060 text-amber-600 darktext-amber-400 flex items-center justify-center font-bold
+            i class=ph-fill ph-fire text-xsi
+          div
+          div
+            span class=text-slate-400 darktext-slate-500 block text-[9px] uppercase font-semiboldSerispan
+            span id=counter-streak class=font-bold text-amber-600 darktext-amber-4000span
+          div
+        div
+      div
+
+      div class=w-full bg-slate-200 darkbg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden
+        div id=progress-bar-fill class=bg-gradient-to-r from-rose-500 to-emerald-500 h-full w-0 transition-all duration-300div
+      div
+    section
+
+    !-- Kart Destesi --
+    main class=w-full max-w-md mx-auto flex-1 flex flex-col justify-center items-center px-4 relative my-auto select-none
+      div id=card-deck-container class=relative w-full h-[450px] max-h-[62vh] flex items-center justify-center perspective-container
+        
+        !-- Bitiş Ekranı --
+        div id=empty-state class=hidden flex-col items-center justify-center text-center p-6 bg-white darkbg-slate-900 border border-slate-200 darkborder-slate-800 rounded-3xl shadow-card w-full h-full max-h-[440px]
+          div class=w-16 h-16 bg-emerald-100 darkbg-emerald-95080 text-emerald-500 rounded-full flex items-center justify-center text-3xl mb-3 animate-bounce
+            i class=ph-fill ph-trophyi
+          div
+          h2 class=text-xl font-display font-extrabold text-slate-800 darktext-white mb-1.5Harika İş! Wunderbar! 🎉h2
+          p class=text-xs text-slate-500 darktext-slate-400 max-w-xs mb-5
+            Bu kategorideki tüm kelimeleri tamamladın.
+          p
+          div class=flex flex-col gap-2 w-full max-w-xs
+            button id=btn-change-category class=w-full py-3 px-4 bg-gradient-to-r from-rose-500 to-pink-600 hoverfrom-rose-600 hoverto-pink-700 text-white font-bold rounded-2xl shadow-lg shadow-rose-50025 transition activescale-95 flex items-center justify-center gap-2 text-sm
+              i class=ph-bold ph-squares-four text-lgi
+              Başka Bir Konu Seç
+            button
+            button id=btn-restart-deck class=w-full py-2.5 px-4 bg-slate-100 darkbg-slate-800 hoverbg-slate-200 darkhoverbg-slate-700 text-slate-700 darktext-slate-200 font-semibold rounded-2xl transition text-xs
+              Bu Konuyu Baştan Tekrar Et
+            button
+          div
+        div
+
+      div
+
+      div class=hidden smflex items-center justify-center gap-3 mt-2 text-[11px] text-slate-400 darktext-slate-500
+        spankbd class=px-1.5 py-0.5 bg-slate-200 darkbg-slate-800 rounded text-slate-700 darktext-slate-300 font-mono text-[10px]←kbd Tekrarspan
+        spankbd class=px-1.5 py-0.5 bg-slate-200 darkbg-slate-800 rounded text-slate-700 darktext-slate-300 font-mono text-[10px]Boşlukkbd Çevirspan
+        spankbd class=px-1.5 py-0.5 bg-slate-200 darkbg-slate-800 rounded text-slate-700 darktext-slate-300 font-mono text-[10px]↑kbd Dinlespan
+        spankbd class=px-1.5 py-0.5 bg-slate-200 darkbg-slate-800 rounded text-slate-700 darktext-slate-300 font-mono text-[10px]→kbd Öğrendimspan
+      div
+    main
+
+    !-- Alt Butonlar --
+    footer class=w-full max-w-md mx-auto px-6 py-3 flex items-center justify-around z-20 shrink-0
+      button id=btn-action-undo class=w-11 h-11 rounded-full bg-white darkbg-slate-800 text-amber-500 shadow-md border border-slate-20080 darkborder-slate-70080 flex items-center justify-center hoverscale-110 activescale-95 transition title=Geri Al (Z)
+        i class=ph-bold ph-arrow-u-up-left text-lgi
+      button
+
+      button id=btn-action-left class=w-14 h-14 rounded-full bg-white darkbg-slate-800 text-rose-500 shadow-lg border border-rose-100 darkborder-rose-95040 flex items-center justify-center hoverscale-110 activescale-90 transition group shadow-rose-50010 title=Ezberleyemedim  Tekrar Et
+        i class=ph-bold ph-x text-2xl group-hoverscale-110 transitioni
+      button
+
+      button id=btn-action-flip class=w-12 h-12 rounded-full bg-gradient-to-tr from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-50025 flex items-center justify-center hoverscale-110 activescale-95 transition title=Kartı Çevir (Boşluk)
+        i class=ph-bold ph-arrows-clockwise text-xli
+      button
+
+      button id=btn-action-speak class=w-11 h-11 rounded-full bg-white darkbg-slate-800 text-indigo-500 shadow-md border border-slate-20080 darkborder-slate-70080 flex items-center justify-center hoverscale-110 activescale-95 transition title=Almanca Telaffuz
+        i id=btn-speak-icon class=ph-bold ph-speaker-high text-xli
+      button
+
+      button id=btn-action-right class=w-14 h-14 rounded-full bg-white darkbg-slate-800 text-emerald-500 shadow-lg border border-emerald-100 darkborder-emerald-95040 flex items-center justify-center hoverscale-110 activescale-90 transition group shadow-emerald-50010 title=Ezberledim  Öğrendim
+        i class=ph-bold ph-check text-2xl group-hoverscale-110 transitioni
+      button
+    footer
+  div
+
+  !-- ================= İSTATİSTİK MODALI ================= --
+  div id=modal-stats class=fixed inset-0 z-50 bg-black60 backdrop-blur-sm hidden items-center justify-center p-4
+    div class=bg-white darkbg-slate-900 border border-slate-200 darkborder-slate-800 rounded-3xl max-w-sm w-full p-6 shadow-2xl relative
+      button id=btn-close-stats class=absolute top-4 right-4 text-slate-400 hovertext-slate-600 darkhovertext-slate-200
+        i class=ph-bold ph-x text-xli
+      button
+
+      div class=w-12 h-12 rounded-2xl bg-indigo-100 darkbg-indigo-95060 text-indigo-500 flex items-center justify-center text-2xl mb-3
+        i class=ph-bold ph-chart-line-upi
+      div
+
+      h3 class=text-xl font-display font-bold text-slate-900 darktext-whiteÇalışma Özetih3
+      p class=text-xs text-slate-500 darktext-slate-400 mt-1 mb-4
+        Oturum boyunca kaydettiğin performans verileri.
+      p
+
+      div class=grid grid-cols-2 gap-3 mb-4
+        div class=p-3 bg-slate-50 darkbg-slate-80060 rounded-2xl border border-slate-100 darkborder-slate-800
+          span class=text-[10px] text-slate-400 uppercase font-semibold blockToplam Kaydırmaspan
+          span id=stat-total-swipes class=text-xl font-extrabold text-slate-800 darktext-white0span
+        div
+        div class=p-3 bg-slate-50 darkbg-slate-80060 rounded-2xl border border-slate-100 darkborder-slate-800
+          span class=text-[10px] text-slate-400 uppercase font-semibold blockDoğruluk Oranıspan
+          span id=stat-accuracy class=text-xl font-extrabold text-emerald-5000%span
+        div
+        div class=p-3 bg-slate-50 darkbg-slate-80060 rounded-2xl border border-slate-100 darkborder-slate-800
+          span class=text-[10px] text-slate-400 uppercase font-semibold blockHafızadaki Kelimelerspan
+          span id=stat-mastered class=text-xl font-extrabold text-sky-5000span
+        div
+        div class=p-3 bg-slate-50 darkbg-slate-80060 rounded-2xl border border-slate-100 darkborder-slate-800
+          span class=text-[10px] text-slate-400 uppercase font-semibold blockEn Yüksek Serispan
+          span id=stat-best-streak class=text-xl font-extrabold text-amber-5000span
+        div
+      div
+
+      button id=btn-reset-all class=w-full py-2.5 text-xs font-bold text-rose-500 hoverbg-rose-50 darkhoverbg-rose-95040 rounded-xl transition border border-rose-200 darkborder-rose-90050
+        Tüm İlerlemeyi Sıfırla
+      button
+    div
+  div
+
+  script
+     -------------------------------------------------------------
+       1. VERİ HAVUZU
+    -------------------------------------------------------------- 
+    const CATEGORIES = [
+      { id 'supermarkt', name 'Süpermarket & Alışveriş', icon '🛒', desc 'Gıdalar, içecekler, market' },
+      { id 'verkehr', name 'Ulaşım & Seyahat', icon '🚆', desc 'Bilet, tren, istasyon, uçak' },
+      { id 'obst', name 'Manav (Meyve & Sebze)', icon '🍎', desc 'Taze meyveler, sebzeler' },
+      { id 'schreibwaren', name 'Kırtasiye & Ofis', icon '✏️', desc 'Defter, kitap, kalem' },
+      { id 'zuhause', name 'Ev & Eşyalar', icon '🏠', desc 'Mobilyalar, odalar, anahtar' },
+      { id 'all', name 'Tümünü Karışık Çalış', icon '🎲', desc 'Tüm konuları harmanla' }
+    ];
+
+    const MASTER_VOCABULARY = [
+       Market
+      { id m1, category supermarkt, article der, word Käse, plural die Käse, emoji 🧀, type Nomen, translation Peynir, exampleDe Der Käse schmeckt sehr lecker., exampleTr Peynir çok lezzetli., notes Süt ürünlerinin çoğu 'der' alır. },
+      { id m2, category supermarkt, article die, word Milch, plural die Milch, emoji 🥛, type Nomen, translation Süt, exampleDe Die Milch steht im Kühlschrank., exampleTr Süt buzdolabında duruyor., notes Çoğulu genelde tekiliyle aynı kullanılır. },
+      { id m3, category supermarkt, article das, word Brot, plural die Brote, emoji 🍞, type Nomen, translation Ekmek, exampleDe Ich kaufe ein frisches Brot., exampleTr Taze bir ekmek satın alıyorum., notes Nötr isim (das Brot). },
+      { id m4, category supermarkt, article die, word Butter, plural die Butter, emoji 🧈, type Nomen, translation Tereyağı, exampleDe Ich brauche Butter zum Kochen., exampleTr Yemek pişirmek için tereyağına ihtiyacım var., notes Her zaman feminin (die). },
+      { id m5, category supermarkt, article der, word Kaffee, plural die Kaffees, emoji ☕, type Nomen, translation Kahve, exampleDe Möchtest du eine Tasse Kaffee, exampleTr Bir fincan kahve ister misin, notes İçecek olan Kaffee 'der' artikelidir. },
+
+       Ulaşım
+      { id v1, category verkehr, article der, word Bahnhof, plural die Bahnhöfe, emoji 🚉, type Nomen, translation Tren Garı  İstasyon, exampleDe Entschuldigung, wo ist der Bahnhof, exampleTr Affedersiniz, tren istasyonu nerede, notes Hof kökenli bileşik kelimeler 'der' alır. },
+      { id v2, category verkehr, article der, word Zug, plural die Züge, emoji 🚆, type Nomen, translation Tren, exampleDe Der Zug fährt pünktlich ab., exampleTr Tren vaktinde hareket ediyor., notes Çoğulda Umlaut (ü) ve -e alır. },
+      { id v3, category verkehr, article die, word Fahrkarte, plural die Fahrkarten, emoji 🎫, type Nomen, translation Bilet, exampleDe Wo kann ich eine Fahrkarte kaufen, exampleTr Nereden bilet satın alabilirim, notes Karte (kart) feminin olduğu için 'die' alır. },
+      { id v4, category verkehr, article das, word Flugzeug, plural die Flugzeuge, emoji ✈️, type Nomen, translation Uçak, exampleDe Das Flugzeug fliegt nach Frankfurt., exampleTr Uçak Frankfurt'a uçuyor., notes '-zeug' ile biten araç isimleri 'das' alır. },
+      { id v5, category verkehr, article das, word Auto, plural die Autos, emoji 🚗, type Nomen, translation Araba  Otomobil, exampleDe Sein Auto ist modern und schnell., exampleTr Onun arabası modern ve hızlı., notes Yabancı kökenli isimler çoğulda -s alır. },
+
+       Manav
+      { id o1, category obst, article der, word Apfel, plural die Äpfel, emoji 🍎, type Nomen, translation Elma, exampleDe Ich esse jeden Tag einen Apfel., exampleTr Her gün bir elma yerim., notes Çoğulda sadece Umlaut değişimi olur. },
+      { id o2, category obst, article die, word Banane, plural die Bananen, emoji 🍌, type Nomen, translation Muz, exampleDe Die Banane ist reif und süß., exampleTr Muz olgun ve tatlı., notes Tropik meyvelerin çoğu 'die' alır. },
+      { id o3, category obst, article die, word Tomate, plural die Tomaten, emoji 🍅, type Nomen, translation Domates, exampleDe Ich kaufe ein Kilo Tomaten., exampleTr Bir kilo domates alıyorum., notes Çoğulda -n eklenir. },
+      { id o4, category obst, article die, word Kartoffel, plural die Kartoffeln, emoji 🥔, type Nomen, translation Patates, exampleDe Kartoffeln sind sehr gesund., exampleTr Patatesler çok sağlıklıdır., notes Feminin isim (die Kartoffel). },
+
+       Kırtasiye
+      { id s1, category schreibwaren, article der, word Stift, plural die Stifte, emoji ✏️, type Nomen, translation Kalem, exampleDe Hast du einen blauen Stift, exampleTr Mavi bir kalemin var mı, notes Maskulin (der Stift). },
+      { id s2, category schreibwaren, article das, word Buch, plural die Bücher, emoji 📚, type Nomen, translation Kitap, exampleDe Ich lese ein deutsches Buch., exampleTr Almanca bir kitap okuyorum., notes Çoğulda Umlaut ve -er alır. },
+      { id s3, category schreibwaren, article das, word Heft, plural die Hefte, emoji 📓, type Nomen, translation Defter, exampleDe Schreib das bitte in dein Heft., exampleTr Lütfen bunu defterine yaz., notes Nötr isim (das Heft). },
+
+       Ev & Eşyalar
+      { id z1, category zuhause, article der, word Tisch, plural die Tische, emoji 🪑, type Nomen, translation Masa, exampleDe Das Buch liegt auf dem Tisch., exampleTr Kitap masanın üzerinde duruyor., notes Maskulin (der Tisch). },
+      { id z2, category zuhause, article das, word Haus, plural die Häuser, emoji 🏡, type Nomen, translation Ev, exampleDe Wir wohnen in einem kleinen Haus., exampleTr Küçük bir evde yaşıyoruz., notes Nötr (das Haus). },
+      { id z3, category zuhause, article die, word Katze, plural die Katzen, emoji 🐱, type Nomen, translation Kedi, exampleDe Die Katze schläft auf dem Sofa., exampleTr Kedi kanepede uyuyor., notes Feminin (die Katze). },
+      { id z4, category zuhause, article der, word Schlüssel, plural die Schlüssel, emoji 🔑, type Nomen, translation Anahtar, exampleDe Wo ist mein Schlüssel, exampleTr Anahtarım nerede, notes Tekili ve çoğulu aynı kalır. }
+    ];
+
+     -------------------------------------------------------------
+       2. DURUM YÖNETİMİ
+    -------------------------------------------------------------- 
+    const STORAGE_KEY = wortswipe_pro_v6;
+
+    let state = {
+      currentCatId null,
+      queue [],
+      masteredIds [],
+      history [],
+      streak 0,
+      bestStreak 0,
+      totalSwipes 0,
+      correctSwipes 0
+    };
+
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          state.masteredIds = parsed.masteredIds  [];
+          state.streak = parsed.streak  0;
+          state.bestStreak = parsed.bestStreak  0;
+          state.totalSwipes = parsed.totalSwipes  0;
+          state.correctSwipes = parsed.correctSwipes  0;
+        }
+      } catch (e) {
+        console.error(Storage error, e);
+      }
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          masteredIds state.masteredIds,
+          streak state.streak,
+          bestStreak state.bestStreak,
+          totalSwipes state.totalSwipes,
+          correctSwipes state.correctSwipes
+        }));
+      } catch (e) {
+        console.error(Save error, e);
+      }
+      updateUI();
+    }
+
+    function getArticleTheme(article) {
+      switch ((article  ).toLowerCase()) {
+        case der
+          return {
+            bg bg-sky-50 darkbg-sky-95030,
+            border border-sky-500,
+            badgeBg bg-sky-500 text-white,
+            text text-sky-600 darktext-sky-400,
+            name Maskulin (der)
+          };
+        case die
+          return {
+            bg bg-rose-50 darkbg-rose-95030,
+            border border-rose-500,
+            badgeBg bg-rose-500 text-white,
+            text text-rose-600 darktext-rose-400,
+            name Feminin (die)
+          };
+        case das
+          return {
+            bg bg-emerald-50 darkbg-emerald-95030,
+            border border-emerald-500,
+            badgeBg bg-emerald-500 text-white,
+            text text-emerald-600 darktext-emerald-400,
+            name Neutral (das)
+          };
+        default
+          return {
+            bg bg-violet-50 darkbg-violet-95030,
+            border border-violet-500,
+            badgeBg bg-violet-500 text-white,
+            text text-violet-600 darktext-violet-400,
+            name Fiil  Diğer
+          };
+      }
+    }
+
+     -------------------------------------------------------------
+       3. GOOGLE TRANSLATE SES MOTORU + iOS SAFARI UYUMLULUK SİSTEMİ
+    -------------------------------------------------------------- 
+    let currentAudio = null;
+    let germanVoices = [];
+
+     iOS ve diğer tarayıcılar için en doğal Almanca sistem seslerini önceden hazırla
+    function loadVoices() {
+      if ('speechSynthesis' in window) {
+        const allVoices = window.speechSynthesis.getVoices();
+        germanVoices = allVoices.filter(v = v.lang.startsWith('de'));
+      }
+    }
+    if ('speechSynthesis' in window) {
+      loadVoices();
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    function stopPulseAnimation() {
+      const icon = document.getElementById(btn-speak-icon);
+      if (icon && icon.parentElement) icon.parentElement.classList.remove(audio-playing);
+      document.querySelectorAll(.btn-card-audio, .btn-card-plural-audio).forEach(btn = {
+        btn.classList.remove(audio-playing);
+      });
+    }
+
+    function speakWithNativeiOSFallback(query) {
+      if (!('speechSynthesis' in window)) {
+        stopPulseAnimation();
+        return;
+      }
+
+      window.speechSynthesis.cancel();
+      const ut = new SpeechSynthesisUtterance(query);
+      ut.lang = de-DE;
+      ut.rate = 0.9;
+
+      if (germanVoices.length === 0) loadVoices();
+
+       iOS'ta en doğal çıkan Siri  Anna  Google sesini seç
+      const preferredVoice = germanVoices.find(v = 
+        v.name.includes(Google)  
+        v.name.includes(Anna)  
+        v.name.includes(Helena)  
+        v.name.includes(Siri)  
+        v.name.includes(Premium)
+      )  germanVoices[0];
+
+      if (preferredVoice) {
+        ut.voice = preferredVoice;
+      }
+
+      ut.onend = stopPulseAnimation;
+      ut.onerror = stopPulseAnimation;
+
+      window.speechSynthesis.speak(ut);
+    }
+
+    function speakGermanWord(text, clickedBtn = null) {
+      stopPulseAnimation();
+
+      const bottomIcon = document.getElementById(btn-speak-icon);
+      if (bottomIcon && bottomIcon.parentElement) {
+        bottomIcon.parentElement.classList.add(audio-playing);
+      }
+      if (clickedBtn) {
+        clickedBtn.classList.add(audio-playing);
+      }
+
+      const query = text.replace([^a-zA-ZäöüÄÖÜß.,! ]g, '').trim();
+      if (!query) {
+        stopPulseAnimation();
+        return;
+      }
+
+       Önceki çalan sesi durdur
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+      }
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+
+       1. Öncelik Doğrudan Google Translate Almanca (de) Ses Sunucusu
+      const googleTranslateTtsUrl = `httpstranslate.googleapis.comtranslate_ttsclient=gtx&ie=UTF-8&tl=de&q=${encodeURIComponent(query)}`;
+
+      const audio = new Audio();
+       iOS Safari ve Google 403 engelini aşmak için kritik ayarlar
+      audio.playsInline = true;
+      audio.setAttribute(playsinline, true);
+      audio.setAttribute(webkit-playsinline, true);
+      audio.referrerPolicy = no-referrer;
+      audio.src = googleTranslateTtsUrl;
+
+      currentAudio = audio;
+
+      let fallbackTriggered = false;
+      const triggerFallback = () = {
+        if (fallbackTriggered) return;
+        fallbackTriggered = true;
+        speakWithNativeiOSFallback(query);
+      };
+
+      audio.onended = () = {
+        stopPulseAnimation();
+      };
+
+      audio.onerror = () = {
+        triggerFallback();
+      };
+
+       Kullanıcı etkileşimi (dokunma) zinciri kopmadan anında play() çağrılır
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() = {
+          triggerFallback();
+        });
+      }
+    }
+
+     -------------------------------------------------------------
+       4. KATEGORİ MENÜSÜ
+    -------------------------------------------------------------- 
+    function renderCategoryScreen() {
+      const grid = document.getElementById('category-cards-grid');
+      grid.innerHTML = '';
+
+      CATEGORIES.forEach(cat = {
+        const catWords = cat.id === 'all' 
+           MASTER_VOCABULARY 
+           MASTER_VOCABULARY.filter(w = w.category === cat.id);
+        
+        const masteredInCat = catWords.filter(w = state.masteredIds.includes(w.id)).length;
+        const totalInCat = catWords.length;
+        const pct = totalInCat  0  Math.round((masteredInCat  totalInCat)  100)  0;
+
+        const card = document.createElement('div');
+        card.className = bg-white darkbg-slate-900 border border-slate-20080 darkborder-slate-800 rounded-2xl p-3.5 flex items-center justify-between cursor-pointer hoverborder-rose-400 darkhoverborder-rose-500 transition shadow-sm activescale-[0.99];
+        card.onclick = () = selectCategory(cat.id, cat.name);
+
+        card.innerHTML = `
+          div class=flex items-center gap-3
+            div class=w-11 h-11 rounded-xl bg-slate-100 darkbg-slate-800 flex items-center justify-center text-2xl shrink-0
+              ${cat.icon}
+            div
+            div
+              h3 class=font-display font-bold text-sm text-slate-900 darktext-white leading-snug${cat.name}h3
+              p class=text-[11px] text-slate-400 darktext-slate-500${cat.desc}p
+            div
+          div
+          div class=text-right shrink-0
+            span class=text-xs font-extrabold ${pct === 100  'text-emerald-500'  'text-slate-700 darktext-slate-300'}${masteredInCat}${totalInCat}span
+            div class=w-12 bg-slate-100 darkbg-slate-800 h-1.5 rounded-full mt-1 overflow-hidden
+              div class=bg-gradient-to-r from-rose-500 to-emerald-500 h-full style=width ${pct}%div
+            div
+          div
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function selectCategory(catId, catName) {
+      state.currentCatId = catId;
+      document.getElementById('category-screen').classList.add('hidden');
+      document.getElementById('study-screen').classList.remove('hidden');
+      document.getElementById('study-screen').classList.add('flex');
+      document.getElementById('btn-header-back').classList.remove('hidden');
+      document.getElementById('btn-header-back').classList.add('flex');
+      document.getElementById('deck-name-badge').textContent = catName;
+
+      const pool = catId === 'all'
+         [...MASTER_VOCABULARY]
+         MASTER_VOCABULARY.filter(w = w.category === catId);
+
+      state.queue = [...pool].sort(() = Math.random() - 0.5);
+      state.history = [];
+      renderDeck();
+      updateUI();
+    }
+
+    function returnToCategories() {
+      document.getElementById('study-screen').classList.add('hidden');
+      document.getElementById('study-screen').classList.remove('flex');
+      document.getElementById('category-screen').classList.remove('hidden');
+      document.getElementById('btn-header-back').classList.add('hidden');
+      document.getElementById('btn-header-back').classList.remove('flex');
+      document.getElementById('deck-name-badge').textContent = Konu Seçimi;
+      renderCategoryScreen();
+    }
+
+     -------------------------------------------------------------
+       5. KART ELEMANI VE DOKUNMA YÖNETİMİ
+    -------------------------------------------------------------- 
+    const deckContainer = document.getElementById(card-deck-container);
+    const emptyState = document.getElementById(empty-state);
+
+    let activeCardElement = null;
+    let isFlipped = false;
+
+    function renderDeck() {
+      const existingCards = deckContainer.querySelectorAll(.swipe-card);
+      existingCards.forEach(c = c.remove());
+
+      if (state.queue.length === 0) {
+        emptyState.classList.remove(hidden);
+        emptyState.classList.add(flex);
+        return;
+      } else {
+        emptyState.classList.add(hidden);
+        emptyState.classList.remove(flex);
+      }
+
+      const visibleCount = Math.min(state.queue.length, 3);
+      for (let i = visibleCount - 1; i = 0; i--) {
+        const cardData = state.queue[i];
+        const cardNode = createCardElement(cardData, i);
+        deckContainer.appendChild(cardNode);
+      }
+
+      const topCards = deckContainer.querySelectorAll(.swipe-card);
+      if (topCards.length  0) {
+        activeCardElement = topCards[topCards.length - 1];
+        setupCardGestures(activeCardElement);
+      } else {
+        activeCardElement = null;
+      }
+      isFlipped = false;
+    }
+
+    function createCardElement(data, stackIndex) {
+      const theme = getArticleTheme(data.article);
+      const isTop = stackIndex === 0;
+
+      const card = document.createElement(div);
+      card.className = `swipe-card absolute inset-0 w-full h-full cursor-grab touch-none-all select-none ${
+        isTop  z-30 shadow-card darkshadow-card-dark  stackIndex === 1  z-20 scale-[0.95] translate-y-3 opacity-90 shadow-md  z-10 scale-[0.90] translate-y-6 opacity-75 shadow-sm
+      }`;
+      card.dataset.id = data.id;
+
+      card.innerHTML = `
+        div class=card-flipper
+          
+          !-- ================= ÖN YÜZ ================= --
+          div class=face bg-white darkbg-slate-900 border border-slate-20090 darkborder-slate-800 p-6 flex flex-col justify-between overflow-hidden
+            
+            div class=stamp-like pointer-events-none absolute top-7 left-7 z-40 border-4 border-emerald-500 text-emerald-500 font-display font-black text-2xl tracking-wider px-3.5 py-1 rounded-xl rotate-[-15deg] opacity-0 transition-opacity uppercase
+              GELERNT ✓
+            div
+            div class=stamp-dislike pointer-events-none absolute top-7 right-7 z-40 border-4 border-rose-500 text-rose-500 font-display font-black text-2xl tracking-wider px-3.5 py-1 rounded-xl rotate-[15deg] opacity-0 transition-opacity uppercase
+              NOCHMAL ✕
+            div
+
+            div class=flex items-center justify-between
+              span class=text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${theme.bg} ${theme.text} border ${theme.border}
+                ${data.type} • ${theme.name}
+              span
+              button type=button class=btn-card-audio p-2.5 rounded-full bg-slate-100 darkbg-slate-800 text-slate-500 hovertext-indigo-500 activescale-90 transition title=Seslendir
+                i class=ph-fill ph-speaker-high text-lgi
+              button
+            div
+
+            div class=text-center my-auto px-2 pointer-events-none
+              div class=text-5xl smtext-6xl mb-3 filter drop-shadow-sm
+                ${data.emoji  '✨'}
+              div
+
+              ${data.article && data.article !== '-'  `
+                div class=inline-block text-base font-extrabold px-3 py-0.5 rounded-lg mb-2 shadow-sm ${theme.badgeBg}
+                  ${data.article}
+                div
+              `  ''}
+              
+              h2 class=text-3xl smtext-4xl font-display font-extrabold tracking-tight text-slate-900 darktext-white leading-tight
+                ${data.word}
+              h2
+
+              ${data.plural && data.plural !== '-'  `
+                p class=text-xs font-medium text-slate-400 darktext-slate-500 mt-2
+                  Plural span class=font-semibold text-slate-600 darktext-slate-300${data.plural}span
+                p
+              `  ''}
+            div
+
+            div class=pt-3 border-t border-slate-100 darkborder-slate-80080 flex items-center justify-between text-slate-400 darktext-slate-500 text-xs pointer-events-none
+              span class=flex items-center gap-1 font-medium
+                i class=ph-bold ph-hand-tap text-sm text-indigo-500i Çevirmek için dokun
+              span
+              span class=text-[11px]Sola Tekrar • Sağa Ezberspan
+            div
+          div
+
+          !-- ================= ARKA YÜZ ================= --
+          div class=face face-back bg-gradient-to-b from-white to-slate-50 darkfrom-slate-900 darkto-slate-950 border-2 border-indigo-40040 p-6 flex flex-col justify-between overflow-hidden
+            
+            div class=flex items-center justify-between
+              span class=text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-indigo-50 darkbg-indigo-95040 text-indigo-600 darktext-indigo-400 border border-indigo-200 darkborder-indigo-800
+                Detay & Anlam
+              span
+              button type=button class=btn-card-audio p-2.5 rounded-full bg-slate-100 darkbg-slate-800 text-slate-500 hovertext-indigo-500 activescale-90 transition title=Kelimeyi Dinle
+                i class=ph-fill ph-speaker-high text-lgi
+              button
+            div
+
+            div class=my-auto space-y-3
+              div class=p-3.5 rounded-2xl bg-slate-50 darkbg-slate-80050 border border-slate-20070 darkborder-slate-800 text-left
+                ${data.plural && data.plural !== '-'  `
+                  div class=pb-2.5 mb-2.5 border-b border-slate-20080 darkborder-slate-70060 flex items-center justify-between
+                    div
+                      span class=text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5Çoğul (Plural)span
+                      span class=text-sm font-semibold text-slate-700 darktext-slate-200 font-mono
+                        ${data.plural}
+                      span
+                    div
+                    button type=button class=btn-card-plural-audio p-2 rounded-lg bg-indigo-50 darkbg-indigo-95050 text-indigo-500 hoverbg-indigo-100 activescale-90 transition title=Çoğul Telaffuzu Dinle
+                      i class=ph-bold ph-speaker-simple-high text-basei
+                    button
+                  div
+                `  ''}
+
+                div
+                  span class=text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5Türkçe Karşılığıspan
+                  div class=flex items-center gap-2
+                    span class=text-2xl${data.emoji  '✨'}span
+                    h3 class=text-xl font-display font-black text-slate-900 darktext-white leading-tight
+                      ${data.translation}
+                    h3
+                  div
+                div
+              div
+
+              div class=p-3.5 rounded-2xl bg-slate-10080 darkbg-slate-80060 border border-slate-20060 darkborder-slate-70060 pointer-events-none
+                div class=flex items-start gap-2
+                  i class=ph-bold ph-chat-centered-text text-indigo-500 mt-0.5 shrink-0i
+                  div
+                    p class=text-xs smtext-sm font-semibold text-slate-800 darktext-slate-100
+                      ${data.exampleDe}
+                    p
+                    p class=text-xs text-slate-500 darktext-slate-400 mt-1 italic
+                      ${data.exampleTr}
+                    p
+                  div
+                div
+              div
+
+              ${data.notes  `
+                p class=text-[11px] text-amber-600 darktext-amber-400 bg-amber-50 darkbg-amber-95040 px-3 py-1.5 rounded-xl border border-amber-200 darkborder-amber-80050 pointer-events-none
+                  💡 span class=font-medium${data.notes}span
+                p
+              `  ''}
+            div
+
+            div class=pt-3 border-t border-slate-200 darkborder-slate-800 flex items-center justify-between text-slate-400 text-xs pointer-events-none
+              span class=flex items-center gap-1 font-medium
+                i class=ph-bold ph-arrow-counter-clockwise text-indigo-500i Ön yüze dönmek için dokun
+              span
+              span class=font-bold text-slate-500 darktext-slate-300WortSwipespan
+            div
+
+          div
+
+        div
+      `;
+
+       Kart üzerindeki hoparlör butonları
+      const audioBtns = card.querySelectorAll(.btn-card-audio);
+      audioBtns.forEach(btn = {
+        btn.addEventListener(click, (e) = {
+          e.stopPropagation();
+          const spokenText = (data.article && data.article !== '-'  data.article +    ) + data.word;
+          speakGermanWord(spokenText, btn);
+        });
+      });
+
+       Çoğul okuma butonu
+      const pluralAudioBtn = card.querySelector(.btn-card-plural-audio);
+      if (pluralAudioBtn) {
+        pluralAudioBtn.addEventListener(click, (e) = {
+          e.stopPropagation();
+          speakGermanWord(data.plural, pluralAudioBtn);
+        });
+      }
+
+      return card;
+    }
+
+     -------------------------------------------------------------
+       6. SWIPE VE DOKUNMA MANTIĞI
+    -------------------------------------------------------------- 
+    function setupCardGestures(card) {
+      if (!card) return;
+
+      const likeStamp = card.querySelector(.stamp-like);
+      const dislikeStamp = card.querySelector(.stamp-dislike);
+      
+      let isDragging = false;
+      let startX = 0, startY = 0;
+      let currentX = 0, currentY = 0;
+      let startTime = 0;
+
+      function onStart(e) {
+        if (e.target.closest('.btn-card-audio')  e.target.closest('.btn-card-plural-audio')) return;
+
+        isDragging = true;
+        const point = e.touches  e.touches[0]  e;
+        startX = point.clientX;
+        startY = point.clientY;
+        currentX = 0;
+        currentY = 0;
+        startTime = Date.now();
+        
+        card.style.transition = 'none';
+        card.classList.add(cursor-grabbing);
+      }
+
+      function onMove(e) {
+        if (!isDragging) return;
+        const point = e.touches  e.touches[0]  e;
+        currentX = point.clientX - startX;
+        currentY = point.clientY - startY;
+
+        const rotate = currentX  0.08;
+        card.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) rotate(${rotate}deg)`;
+
+        const dragLimit = 80;
+        if (currentX  0) {
+          likeStamp.style.opacity = Math.min(currentX  dragLimit, 1);
+          dislikeStamp.style.opacity = 0;
+        } else {
+          dislikeStamp.style.opacity = Math.min(Math.abs(currentX)  dragLimit, 1);
+          likeStamp.style.opacity = 0;
+        }
+      }
+
+      function onEnd(e) {
+        if (!isDragging) return;
+        isDragging = false;
+        card.classList.remove(cursor-grabbing);
+
+        const moveDistance = Math.hypot(currentX, currentY);
+        const elapsedTime = Date.now() - startTime;
+
+        if (moveDistance  20 && elapsedTime  450) {
+          resetCardPosition(card, likeStamp, dislikeStamp);
+          toggleCardFlip();
+          return;
+        }
+
+        const threshold = 100;
+
+        if (currentX  threshold) {
+          executeSwipe(right);
+        } else if (currentX  -threshold) {
+          executeSwipe(left);
+        } else {
+          resetCardPosition(card, likeStamp, dislikeStamp);
+        }
+      }
+
+      card.addEventListener(mousedown, onStart);
+      window.addEventListener(mousemove, onMove);
+      window.addEventListener(mouseup, onEnd);
+
+      card.addEventListener(touchstart, onStart, { passive true });
+      window.addEventListener(touchmove, onMove, { passive true });
+      window.addEventListener(touchend, onEnd);
+    }
+
+    function resetCardPosition(card, likeStamp, dislikeStamp) {
+      if (!card) return;
+      card.style.transition = 'transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+      card.style.transform = 'translate3d(0, 0, 0) rotate(0deg)';
+      if (likeStamp) likeStamp.style.opacity = '0';
+      if (dislikeStamp) dislikeStamp.style.opacity = '0';
+    }
+
+    function toggleCardFlip() {
+      if (!activeCardElement) return;
+      const flipper = activeCardElement.querySelector(.card-flipper);
+      if (!flipper) return;
+
+      isFlipped = !isFlipped;
+      flipper.classList.toggle(is-flipped, isFlipped);
+    }
+
+     -------------------------------------------------------------
+       7. SWIPE MEKANİĞİ
+    -------------------------------------------------------------- 
+    function executeSwipe(direction) {
+      if (!activeCardElement  state.queue.length === 0) return;
+
+      const currentItem = state.queue[0];
+      const cardToFly = activeCardElement;
+
+      cardToFly.style.transition = 'transform 0.4s ease-out, opacity 0.4s ease-out';
+      const flyDistance = window.innerWidth  1.35;
+      const flyRotation = direction === 'right'  35  -35;
+      const targetX = direction === 'right'  flyDistance  -flyDistance;
+
+      cardToFly.style.transform = `translate3d(${targetX}px, 0, 0) rotate(${flyRotation}deg)`;
+      cardToFly.style.opacity = '0';
+
+      state.totalSwipes++;
+
+      if (direction === 'right') {
+        state.correctSwipes++;
+        state.streak++;
+        if (state.streak  state.bestStreak) state.bestStreak = state.streak;
+
+        state.history.push({ action 'mastered', item currentItem });
+        if (!state.masteredIds.includes(currentItem.id)) {
+          state.masteredIds.push(currentItem.id);
+        }
+        state.queue.shift();
+      } else {
+        state.streak = 0;
+        state.history.push({ action 'repeat', item currentItem });
+        
+        state.queue.shift();
+        const reinsertIndex = Math.min(state.queue.length, 3);
+        state.queue.splice(reinsertIndex, 0, currentItem);
+      }
+
+      setTimeout(() = {
+        saveState();
+        renderDeck();
+      }, 280);
+    }
+
+    function undoLastSwipe() {
+      if (state.history.length === 0) return;
+      const last = state.history.pop();
+
+      if (last.action === 'mastered') {
+        state.masteredIds = state.masteredIds.filter(id = id !== last.item.id);
+        state.queue.unshift(last.item);
+        if (state.streak  0) state.streak--;
+      } else if (last.action === 'repeat') {
+        const idx = state.queue.findIndex(i = i.id === last.item.id);
+        if (idx !== -1) state.queue.splice(idx, 1);
+        state.queue.unshift(last.item);
+      }
+
+      saveState();
+      renderDeck();
+    }
+
+    function updateUI() {
+      const activeCatPool = state.currentCatId === 'all'
+         MASTER_VOCABULARY
+         MASTER_VOCABULARY.filter(w = w.category === state.currentCatId);
+
+      const masteredCount = activeCatPool.filter(w = state.masteredIds.includes(w.id)).length;
+
+      document.getElementById(counter-mastered).textContent = masteredCount;
+      document.getElementById(counter-queue).textContent = state.queue.length;
+      document.getElementById(counter-streak).textContent = state.streak;
+
+      const total = activeCatPool.length;
+      const pct = total  0  Math.min(Math.round((masteredCount  total)  100), 100)  0;
+      document.getElementById(progress-bar-fill).style.width = `${pct}%`;
+
+      document.getElementById(stat-total-swipes).textContent = state.totalSwipes;
+      document.getElementById(stat-mastered).textContent = state.masteredIds.length;
+      document.getElementById(stat-best-streak).textContent = state.bestStreak;
+
+      const accuracy = state.totalSwipes  0  Math.round((state.correctSwipes  state.totalSwipes)  100)  0;
+      document.getElementById(stat-accuracy).textContent = `${accuracy}%`;
+    }
+
+     -------------------------------------------------------------
+       8. AKSİYON BUTONLARI & KLAVYE
+    -------------------------------------------------------------- 
+    document.getElementById(btn-header-back).addEventListener(click, returnToCategories);
+    document.getElementById(btn-change-category).addEventListener(click, returnToCategories);
+
+    document.getElementById(btn-action-left).addEventListener(click, () = executeSwipe(left));
+    document.getElementById(btn-action-right).addEventListener(click, () = executeSwipe(right));
+    document.getElementById(btn-action-flip).addEventListener(click, toggleCardFlip);
+    document.getElementById(btn-action-undo).addEventListener(click, undoLastSwipe);
+
+    document.getElementById(btn-action-speak).addEventListener(click, () = {
+      if (state.queue.length  0) {
+        const item = state.queue[0];
+        speakGermanWord((item.article && item.article !== '-'  item.article +    ) + item.word);
+      }
+    });
+
+    document.getElementById(btn-restart-deck).addEventListener(click, () = {
+      const pool = state.currentCatId === 'all'
+         MASTER_VOCABULARY
+         MASTER_VOCABULARY.filter(w = w.category === state.currentCatId);
+      
+      state.queue = [...pool].sort(() = Math.random() - 0.5);
+      renderDeck();
+      updateUI();
+    });
+
+    window.addEventListener(keydown, (e) = {
+      if (document.getElementById('study-screen').classList.contains('hidden')) return;
+
+      if (e.key === ArrowLeft) executeSwipe(left);
+      else if (e.key === ArrowRight) executeSwipe(right);
+      else if (e.key ===    e.code === Space) { e.preventDefault(); toggleCardFlip(); }
+      else if (e.key === ArrowUp) {
+        e.preventDefault();
+        if (state.queue.length  0) {
+          const item = state.queue[0];
+          speakGermanWord((item.article && item.article !== '-'  item.article +    ) + item.word);
+        }
+      }
+      else if (e.key.toLowerCase() === z) undoLastSwipe();
+      else if (e.key === Escape) returnToCategories();
+    });
+
+    document.getElementById(btn-theme).addEventListener(click, () = {
+      document.documentElement.classList.toggle(dark);
+      localStorage.setItem(wortswipe_theme, document.documentElement.classList.contains(dark)  dark  light);
+    });
+
+    if (localStorage.getItem(wortswipe_theme) === dark  
+       (!localStorage.getItem(wortswipe_theme) && window.matchMedia('(prefers-color-scheme dark)').matches)) {
+      document.documentElement.classList.add(dark);
+    }
+
+    const modalStats = document.getElementById(modal-stats);
+    document.getElementById(btn-stats).addEventListener(click, () = {
+      updateUI();
+      modalStats.classList.remove(hidden);
+      modalStats.classList.add(flex);
+    });
+
+    document.getElementById(btn-close-stats).addEventListener(click, () = {
+      modalStats.classList.add(hidden);
+      modalStats.classList.remove(flex);
+    });
+
+    modalStats.addEventListener(click, (e) = {
+      if (e.target === modalStats) {
+        modalStats.classList.add(hidden);
+        modalStats.classList.remove(flex);
+      }
+    });
+
+    document.getElementById(btn-reset-all).addEventListener(click, () = {
+      if (confirm(Tüm ezber geçmişini ve istatistiklerini sıfırlamak istiyor musun)) {
+        localStorage.removeItem(STORAGE_KEY);
+        state.masteredIds = [];
+        state.streak = 0;
+        state.bestStreak = 0;
+        state.totalSwipes = 0;
+        state.correctSwipes = 0;
+        saveState();
+        renderCategoryScreen();
+        modalStats.classList.add(hidden);
+        modalStats.classList.remove(flex);
+      }
+    });
+
+    window.addEventListener(DOMContentLoaded, () = {
+      loadState();
+      renderCategoryScreen();
+    });
+  script
+body
+html
