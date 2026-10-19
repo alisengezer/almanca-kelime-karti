@@ -117,9 +117,8 @@
     <div class="grid grid-cols-1 gap-2.5 overflow-y-auto max-h-[68vh] pr-1" id="category-cards-grid"></div>
   </section>
 
-  <!-- ================= ÇALIŞMA / OYUN EKRANI ================= -->
+  <!-- ================= ÇALIŞMA EKRANI ================= -->
   <div id="study-screen" class="hidden flex-1 flex-col justify-between w-full">
-    <!-- Progress Indicator -->
     <section class="w-full max-w-md mx-auto px-4 mb-1 z-10 shrink-0">
       <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-2xl p-2.5 shadow-sm border border-slate-200/70 dark:border-slate-800/80 flex items-center justify-between text-xs">
         <div class="flex items-center gap-1.5">
@@ -306,7 +305,7 @@
     /* -------------------------------------------------------------
        2. DURUM YÖNETİMİ
     -------------------------------------------------------------- */
-    const STORAGE_KEY = "wortswipe_pro_v5";
+    const STORAGE_KEY = "wortswipe_pro_v6";
 
     let state = {
       currentCatId: null,
@@ -388,70 +387,49 @@
     }
 
     /* -------------------------------------------------------------
-       3. MOBİL VE SAFARI İÇİN STABİL ALMANCA SES SİSTEMİ
+       3. DOĞAL İNSAN TELAFUZU SES MOTORU (ROBOTİK SESİ BİTİREN SİSTEM)
     -------------------------------------------------------------- */
-    let availableGermanVoice = null;
-
-    function initSpeechEngine() {
-      if (!('speechSynthesis' in window)) return;
-      const voices = window.speechSynthesis.getVoices();
-      
-      // Öncelikle de-DE (Almanya) sesini seç
-      availableGermanVoice = voices.find(v => v.lang === 'de-DE' || v.lang === 'de_DE') 
-                          || voices.find(v => v.lang && v.lang.startsWith('de')) 
-                          || null;
-    }
-
-    if ('speechSynthesis' in window) {
-      initSpeechEngine();
-      window.speechSynthesis.onvoiceschanged = initSpeechEngine;
-    }
-
-    // iOS Safari'de ilk kullanıcı etkileşiminde ses kanalını uyandırır
-    let audioUnlocked = false;
-    function unlockAudioOnFirstTouch() {
-      if (audioUnlocked || !('speechSynthesis' in window)) return;
-      try {
-        const dummy = new SpeechSynthesisUtterance('');
-        dummy.volume = 0;
-        window.speechSynthesis.speak(dummy);
-        audioUnlocked = true;
-      } catch (err) {}
-    }
-    window.addEventListener('touchstart', unlockAudioOnFirstTouch, { once: true });
-    window.addEventListener('click', unlockAudioOnFirstTouch, { once: true });
+    const audioPlayer = new Audio();
 
     function speakGermanWord(text) {
-      if (!('speechSynthesis' in window)) return;
-
       const icon = document.getElementById("btn-speak-icon");
       if (icon) icon.parentElement.classList.add("audio-playing");
 
-      // Safari kilitlenmelerini önlemek için önceki okumayı sıfırla
-      window.speechSynthesis.cancel();
+      // Kelimeyi temizle
+      const query = text.replace(/[^a-zA-ZäöüÄÖÜß ]/g, '').trim();
 
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = "de-DE";
-      utterance.rate = 0.88;
-      utterance.pitch = 1.0;
-      utterance.volume = 1.0;
+      // LinguaRobot / ResponsiveVoice doğal insan sesi proxy kaynağı
+      const audioUrl = `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(query)}&type=2&le=de`;
 
-      if (!availableGermanVoice) initSpeechEngine();
-      if (availableGermanVoice) utterance.voice = availableGermanVoice;
+      audioPlayer.pause();
+      audioPlayer.src = audioUrl;
 
-      utterance.onend = () => {
+      audioPlayer.onended = () => {
         if (icon) icon.parentElement.classList.remove("audio-playing");
       };
 
-      utterance.onerror = () => {
-        if (icon) icon.parentElement.classList.remove("audio-playing");
+      audioPlayer.onerror = () => {
+        // Ağ sorunu yaşanırsa yedek yerleşik ses motoru
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          const ut = new SpeechSynthesisUtterance(query);
+          ut.lang = "de-DE";
+          ut.rate = 0.85;
+          ut.onend = () => { if (icon) icon.parentElement.classList.remove("audio-playing"); };
+          ut.onerror = () => { if (icon) icon.parentElement.classList.remove("audio-playing"); };
+          window.speechSynthesis.speak(ut);
+        } else {
+          if (icon) icon.parentElement.classList.remove("audio-playing");
+        }
       };
 
-      window.speechSynthesis.speak(utterance);
+      audioPlayer.play().catch(() => {
+        audioPlayer.onerror();
+      });
     }
 
     /* -------------------------------------------------------------
-       4. KATEGORİ PANELİ
+       4. KATEGORİ MENÜSÜ
     -------------------------------------------------------------- */
     function renderCategoryScreen() {
       const grid = document.getElementById('category-cards-grid');
@@ -521,7 +499,7 @@
     }
 
     /* -------------------------------------------------------------
-       5. KART ELEMANI VE FLIP / SWIPE BAĞLANTILARI
+       5. KART ELEMANI VE DOKUNMA YÖNETİMİ
     -------------------------------------------------------------- */
     const deckContainer = document.getElementById("card-deck-container");
     const emptyState = document.getElementById("empty-state");
@@ -693,7 +671,6 @@
         </div>
       `;
 
-      // Kart içi ses butonları
       const audioBtns = card.querySelectorAll(".btn-card-audio");
       audioBtns.forEach(btn => {
         btn.addEventListener("click", (e) => {
@@ -715,7 +692,7 @@
     }
 
     /* -------------------------------------------------------------
-       6. DOKUNMA VE SWIPE HESAPLAMASI
+       6. SWIPE VE DOKUNMA MANTIĞI
     -------------------------------------------------------------- */
     function setupCardGestures(card) {
       if (!card) return;
@@ -770,7 +747,6 @@
         const moveDistance = Math.hypot(currentX, currentY);
         const elapsedTime = Date.now() - startTime;
 
-        // Kısa dokunma (Tap): Kartı arkasına çevir
         if (moveDistance < 20 && elapsedTime < 450) {
           resetCardPosition(card, likeStamp, dislikeStamp);
           toggleCardFlip();
@@ -900,7 +876,7 @@
     }
 
     /* -------------------------------------------------------------
-       8. BUTON DİNLERLEYİCİLERİ
+       8. AKSİYON BUTONLARI & KLAVYE
     -------------------------------------------------------------- */
     document.getElementById("btn-header-back").addEventListener("click", returnToCategories);
     document.getElementById("btn-change-category").addEventListener("click", returnToCategories);
@@ -927,7 +903,6 @@
       updateUI();
     });
 
-    // Klavye Kısayolları
     window.addEventListener("keydown", (e) => {
       if (document.getElementById('study-screen').classList.contains('hidden')) return;
 
@@ -945,7 +920,6 @@
       else if (e.key === "Escape") returnToCategories();
     });
 
-    // Dark/Light
     document.getElementById("btn-theme").addEventListener("click", () => {
       document.documentElement.classList.toggle("dark");
       localStorage.setItem("wortswipe_theme", document.documentElement.classList.contains("dark") ? "dark" : "light");
@@ -956,7 +930,6 @@
       document.documentElement.classList.add("dark");
     }
 
-    // Modal
     const modalStats = document.getElementById("modal-stats");
     document.getElementById("btn-stats").addEventListener("click", () => {
       updateUI();
