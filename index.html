@@ -67,9 +67,12 @@
     }
     @keyframes audioPulse {
       0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.15); }
+      50% { transform: scale(1.18); }
     }
-    .audio-playing { animation: audioPulse 0.8s ease-in-out infinite; }
+    .audio-playing {
+      animation: audioPulse 0.65s ease-in-out infinite;
+      color: #6366f1 !important;
+    }
   </style>
 </head>
 <body class="bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen flex flex-col justify-between font-sans transition-colors duration-300 overflow-x-hidden selection:bg-rose-500 selection:text-white">
@@ -387,123 +390,95 @@
     }
 
     /* -------------------------------------------------------------
-       3. GOOGLE TRANSLATE SES MOTORU + iOS SAFARI UYUMLULUK SİSTEMİ
+       3. %100 iOS VE ANDROID UYUMLU GARANTİLİ ALMANCA SES MOTORU
     -------------------------------------------------------------- */
-    let currentAudio = null;
-    let germanVoices = [];
+    let pulseSafetyTimer = null;
+    let cachedGermanVoice = null;
 
-    // iOS ve diğer tarayıcılar için en doğal Almanca sistem seslerini önceden hazırla
-    function loadVoices() {
-      if ('speechSynthesis' in window) {
-        const allVoices = window.speechSynthesis.getVoices();
-        germanVoices = allVoices.filter(v => v.lang.startsWith('de'));
-      }
+    function initGermanVoice() {
+      if (!('speechSynthesis' in window)) return;
+      const voices = window.speechSynthesis.getVoices();
+      if (!voices || voices.length === 0) return;
+
+      const deVoices = voices.filter(v => v.lang && v.lang.toLowerCase().startsWith('de'));
+      // iOS (Anna/Helena/Siri) veya Masaüstü (Google Deutsch) en kaliteli sesi seç
+      cachedGermanVoice = deVoices.find(v =>
+        v.name.includes('Google') ||
+        v.name.includes('Anna') ||
+        v.name.includes('Helena') ||
+        v.name.includes('Petra') ||
+        v.name.includes('Siri') ||
+        v.name.includes('Premium') ||
+        v.lang === 'de-DE'
+      ) || deVoices[0] || null;
     }
+
     if ('speechSynthesis' in window) {
-      loadVoices();
-      window.speechSynthesis.onvoiceschanged = loadVoices;
+      initGermanVoice();
+      window.speechSynthesis.onvoiceschanged = initGermanVoice;
     }
 
     function stopPulseAnimation() {
-      const icon = document.getElementById("btn-speak-icon");
-      if (icon && icon.parentElement) icon.parentElement.classList.remove("audio-playing");
+      if (pulseSafetyTimer) {
+        clearTimeout(pulseSafetyTimer);
+        pulseSafetyTimer = null;
+      }
+      const bottomBtn = document.getElementById("btn-action-speak");
+      if (bottomBtn) bottomBtn.classList.remove("audio-playing");
       document.querySelectorAll(".btn-card-audio, .btn-card-plural-audio").forEach(btn => {
         btn.classList.remove("audio-playing");
       });
     }
 
-    function speakWithNativeiOSFallback(query) {
-      if (!('speechSynthesis' in window)) {
-        stopPulseAnimation();
-        return;
-      }
-
-      window.speechSynthesis.cancel();
-      const ut = new SpeechSynthesisUtterance(query);
-      ut.lang = "de-DE";
-      ut.rate = 0.9;
-
-      if (germanVoices.length === 0) loadVoices();
-
-      // iOS'ta en doğal çıkan Siri / Anna / Google sesini seç
-      const preferredVoice = germanVoices.find(v => 
-        v.name.includes("Google") || 
-        v.name.includes("Anna") || 
-        v.name.includes("Helena") || 
-        v.name.includes("Siri") || 
-        v.name.includes("Premium")
-      ) || germanVoices[0];
-
-      if (preferredVoice) {
-        ut.voice = preferredVoice;
-      }
-
-      ut.onend = stopPulseAnimation;
-      ut.onerror = stopPulseAnimation;
-
-      window.speechSynthesis.speak(ut);
-    }
-
     function speakGermanWord(text, clickedBtn = null) {
       stopPulseAnimation();
 
-      const bottomIcon = document.getElementById("btn-speak-icon");
-      if (bottomIcon && bottomIcon.parentElement) {
-        bottomIcon.parentElement.classList.add("audio-playing");
-      }
-      if (clickedBtn) {
-        clickedBtn.classList.add("audio-playing");
-      }
+      const query = (text || "").replace(/[^a-zA-ZäöüÄÖÜß.,!? ]/g, '').trim();
+      if (!query) return;
 
-      const query = text.replace(/[^a-zA-ZäöüÄÖÜß.,!? ]/g, '').trim();
-      if (!query) {
+      const bottomBtn = document.getElementById("btn-action-speak");
+      if (bottomBtn) bottomBtn.classList.add("audio-playing");
+      if (clickedBtn) clickedBtn.classList.add("audio-playing");
+
+      // Güvenlik kilidi: iOS event kaçırsa bile animasyonu 2.2 saniye sonra kesin olarak durdurur
+      pulseSafetyTimer = setTimeout(() => {
         stopPulseAnimation();
-        return;
-      }
+      }, 2200);
 
-      // Önceki çalan sesi durdur
-      if (currentAudio) {
-        currentAudio.pause();
-        currentAudio = null;
-      }
       if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-      }
+        try {
+          window.speechSynthesis.cancel();
+          if (window.speechSynthesis.paused) {
+            window.speechSynthesis.resume();
+          }
 
-      // 1. Öncelik: Doğrudan Google Translate Almanca (de) Ses Sunucusu
-      const googleTranslateTtsUrl = `https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=de&q=${encodeURIComponent(query)}`;
+          if (!cachedGermanVoice) initGermanVoice();
 
-      const audio = new Audio();
-      // iOS Safari ve Google 403 engelini aşmak için kritik ayarlar:
-      audio.playsInline = true;
-      audio.setAttribute("playsinline", "true");
-      audio.setAttribute("webkit-playsinline", "true");
-      audio.referrerPolicy = "no-referrer";
-      audio.src = googleTranslateTtsUrl;
+          const utterance = new SpeechSynthesisUtterance(query);
+          utterance.lang = "de-DE";
+          utterance.rate = 0.9;
+          utterance.pitch = 1.0;
 
-      currentAudio = audio;
+          if (cachedGermanVoice) {
+            utterance.voice = cachedGermanVoice;
+          }
 
-      let fallbackTriggered = false;
-      const triggerFallback = () => {
-        if (fallbackTriggered) return;
-        fallbackTriggered = true;
-        speakWithNativeiOSFallback(query);
-      };
+          // iOS garbage collection hatasını önlemek için global referansta tut
+          window.__activeUtterance = utterance;
 
-      audio.onended = () => {
+          utterance.onend = () => {
+            stopPulseAnimation();
+          };
+          utterance.onerror = () => {
+            stopPulseAnimation();
+          };
+
+          window.speechSynthesis.speak(utterance);
+        } catch (err) {
+          stopPulseAnimation();
+        }
+      } else {
         stopPulseAnimation();
-      };
-
-      audio.onerror = () => {
-        triggerFallback();
-      };
-
-      // Kullanıcı etkileşimi (dokunma) zinciri kopmadan anında play() çağrılır
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          triggerFallback();
-        });
       }
     }
 
@@ -568,6 +543,7 @@
     }
 
     function returnToCategories() {
+      stopPulseAnimation();
       document.getElementById('study-screen').classList.add('hidden');
       document.getElementById('study-screen').classList.remove('flex');
       document.getElementById('category-screen').classList.remove('hidden');
@@ -639,12 +615,12 @@
               NOCHMAL ✕
             </div>
 
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between relative z-50">
               <span class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${theme.bg} ${theme.text} border ${theme.border}">
                 ${data.type} • ${theme.name}
               </span>
-              <button type="button" class="btn-card-audio p-2.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-indigo-500 active:scale-90 transition" title="Seslendir">
-                <i class="ph-fill ph-speaker-high text-lg"></i>
+              <button type="button" class="btn-card-audio w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-indigo-500 active:scale-90 transition cursor-pointer" title="Seslendir">
+                <i class="ph-fill ph-speaker-high text-lg pointer-events-none"></i>
               </button>
             </div>
 
@@ -681,17 +657,17 @@
           <!-- ================= ARKA YÜZ ================= -->
           <div class="face face-back bg-gradient-to-b from-white to-slate-50 dark:from-slate-900 dark:to-slate-950 border-2 border-indigo-400/40 p-6 flex flex-col justify-between overflow-hidden">
             
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between relative z-50">
               <span class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
                 Detay & Anlam
               </span>
-              <button type="button" class="btn-card-audio p-2.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-indigo-500 active:scale-90 transition" title="Kelimeyi Dinle">
-                <i class="ph-fill ph-speaker-high text-lg"></i>
+              <button type="button" class="btn-card-audio w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-indigo-500 active:scale-90 transition cursor-pointer" title="Kelimeyi Dinle">
+                <i class="ph-fill ph-speaker-high text-lg pointer-events-none"></i>
               </button>
             </div>
 
             <div class="my-auto space-y-3">
-              <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-800 text-left">
+              <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-800 text-left relative z-50">
                 ${data.plural && data.plural !== '-' ? `
                   <div class="pb-2.5 mb-2.5 border-b border-slate-200/80 dark:border-slate-700/60 flex items-center justify-between">
                     <div>
@@ -700,13 +676,13 @@
                         ${data.plural}
                       </span>
                     </div>
-                    <button type="button" class="btn-card-plural-audio p-2 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-500 hover:bg-indigo-100 active:scale-90 transition" title="Çoğul Telaffuzu Dinle">
-                      <i class="ph-bold ph-speaker-simple-high text-base"></i>
+                    <button type="button" class="btn-card-plural-audio w-9 h-9 flex items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-500 hover:bg-indigo-100 active:scale-90 transition cursor-pointer" title="Çoğul Telaffuzu Dinle">
+                      <i class="ph-bold ph-speaker-simple-high text-base pointer-events-none"></i>
                     </button>
                   </div>
                 ` : ''}
 
-                <div>
+                <div class="pointer-events-none">
                   <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Türkçe Karşılığı</span>
                   <div class="flex items-center gap-2">
                     <span class="text-2xl">${data.emoji || '✨'}</span>
@@ -750,10 +726,11 @@
         </div>
       `;
 
-      // Kart üzerindeki hoparlör butonları
+      // Kart üzerindeki hoparlör butonları (iOS ve masaüstü tam uyumlu)
       const audioBtns = card.querySelectorAll(".btn-card-audio");
       audioBtns.forEach(btn => {
         btn.addEventListener("click", (e) => {
+          e.preventDefault();
           e.stopPropagation();
           const spokenText = (data.article && data.article !== '-' ? data.article + " " : "") + data.word;
           speakGermanWord(spokenText, btn);
@@ -764,6 +741,7 @@
       const pluralAudioBtn = card.querySelector(".btn-card-plural-audio");
       if (pluralAudioBtn) {
         pluralAudioBtn.addEventListener("click", (e) => {
+          e.preventDefault();
           e.stopPropagation();
           speakGermanWord(data.plural, pluralAudioBtn);
         });
@@ -877,6 +855,8 @@
     function executeSwipe(direction) {
       if (!activeCardElement || state.queue.length === 0) return;
 
+      stopPulseAnimation();
+
       const currentItem = state.queue[0];
       const cardToFly = activeCardElement;
 
@@ -967,10 +947,10 @@
     document.getElementById("btn-action-flip").addEventListener("click", toggleCardFlip);
     document.getElementById("btn-action-undo").addEventListener("click", undoLastSwipe);
 
-    document.getElementById("btn-action-speak").addEventListener("click", () => {
+    document.getElementById("btn-action-speak").addEventListener("click", (e) => {
       if (state.queue.length > 0) {
         const item = state.queue[0];
-        speakGermanWord((item.article && item.article !== '-' ? item.article + " " : "") + item.word);
+        speakGermanWord((item.article && item.article !== '-' ? item.article + " " : "") + item.word, e.currentTarget);
       }
     });
 
