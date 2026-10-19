@@ -306,7 +306,7 @@
     /* -------------------------------------------------------------
        2. DURUM YÖNETİMİ
     -------------------------------------------------------------- */
-    const STORAGE_KEY = "wortswipe_pro_v4";
+    const STORAGE_KEY = "wortswipe_pro_v5";
 
     let state = {
       currentCatId: null,
@@ -388,53 +388,70 @@
     }
 
     /* -------------------------------------------------------------
-       3. GELİŞMİŞ SES MOTORU (ROBOTİK SESİ ENGELLEYEN HİBRİT YAPI)
+       3. MOBİL VE SAFARI İÇİN STABİL ALMANCA SES SİSTEMİ
     -------------------------------------------------------------- */
-    let audioFallback = new Audio();
+    let availableGermanVoice = null;
+
+    function initSpeechEngine() {
+      if (!('speechSynthesis' in window)) return;
+      const voices = window.speechSynthesis.getVoices();
+      
+      // Öncelikle de-DE (Almanya) sesini seç
+      availableGermanVoice = voices.find(v => v.lang === 'de-DE' || v.lang === 'de_DE') 
+                          || voices.find(v => v.lang && v.lang.startsWith('de')) 
+                          || null;
+    }
+
+    if ('speechSynthesis' in window) {
+      initSpeechEngine();
+      window.speechSynthesis.onvoiceschanged = initSpeechEngine;
+    }
+
+    // iOS Safari'de ilk kullanıcı etkileşiminde ses kanalını uyandırır
+    let audioUnlocked = false;
+    function unlockAudioOnFirstTouch() {
+      if (audioUnlocked || !('speechSynthesis' in window)) return;
+      try {
+        const dummy = new SpeechSynthesisUtterance('');
+        dummy.volume = 0;
+        window.speechSynthesis.speak(dummy);
+        audioUnlocked = true;
+      } catch (err) {}
+    }
+    window.addEventListener('touchstart', unlockAudioOnFirstTouch, { once: true });
+    window.addEventListener('click', unlockAudioOnFirstTouch, { once: true });
 
     function speakGermanWord(text) {
+      if (!('speechSynthesis' in window)) return;
+
       const icon = document.getElementById("btn-speak-icon");
       if (icon) icon.parentElement.classList.add("audio-playing");
 
-      const cleanText = text.replace(/[^a-zA-ZäöüÄÖÜß ]/g, '').trim();
+      // Safari kilitlenmelerini önlemek için önceki okumayı sıfırla
+      window.speechSynthesis.cancel();
 
-      // iPhone'da robotik ses yerine berrak doğal ses sağlamak için stüdyo TTS sesi
-      const naturalTtsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(cleanText)}&tl=de&client=tw-ob`;
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "de-DE";
+      utterance.rate = 0.88;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
 
-      audioFallback.pause();
-      audioFallback.src = naturalTtsUrl;
+      if (!availableGermanVoice) initSpeechEngine();
+      if (availableGermanVoice) utterance.voice = availableGermanVoice;
 
-      audioFallback.onended = () => {
+      utterance.onend = () => {
         if (icon) icon.parentElement.classList.remove("audio-playing");
       };
 
-      audioFallback.onerror = () => {
-        // Ağ veya güvenlik sebebiyle audio çalmazsa Web Speech API'ye dön
-        if ('speechSynthesis' in window) {
-          window.speechSynthesis.cancel();
-          const utterance = new SpeechSynthesisUtterance(cleanText);
-          utterance.lang = "de-DE";
-          utterance.rate = 0.85;
-          const voices = window.speechSynthesis.getVoices();
-          const deVoice = voices.find(v => v.lang === 'de-DE' || v.lang.startsWith('de'));
-          if (deVoice) utterance.voice = deVoice;
-
-          utterance.onend = () => { if (icon) icon.parentElement.classList.remove("audio-playing"); };
-          utterance.onerror = () => { if (icon) icon.parentElement.classList.remove("audio-playing"); };
-          window.speechSynthesis.speak(utterance);
-        } else {
-          if (icon) icon.parentElement.classList.remove("audio-playing");
-        }
+      utterance.onerror = () => {
+        if (icon) icon.parentElement.classList.remove("audio-playing");
       };
 
-      audioFallback.play().catch(() => {
-        // Otomatik oynatma engellenirse fallback
-        audioFallback.onerror();
-      });
+      window.speechSynthesis.speak(utterance);
     }
 
     /* -------------------------------------------------------------
-       4. KATEGORİ MENÜSÜ
+       4. KATEGORİ PANELİ
     -------------------------------------------------------------- */
     function renderCategoryScreen() {
       const grid = document.getElementById('category-cards-grid');
@@ -504,7 +521,7 @@
     }
 
     /* -------------------------------------------------------------
-       5. KART OLUŞTURMA & MOBİL DOKUNMA MEKANİĞİ
+       5. KART ELEMANI VE FLIP / SWIPE BAĞLANTILARI
     -------------------------------------------------------------- */
     const deckContainer = document.getElementById("card-deck-container");
     const emptyState = document.getElementById("empty-state");
@@ -676,7 +693,7 @@
         </div>
       `;
 
-      // Buton Dinleyicileri
+      // Kart içi ses butonları
       const audioBtns = card.querySelectorAll(".btn-card-audio");
       audioBtns.forEach(btn => {
         btn.addEventListener("click", (e) => {
@@ -698,7 +715,7 @@
     }
 
     /* -------------------------------------------------------------
-       6. AKICI DOKUNMA VE SWIPE MEKANİĞİ
+       6. DOKUNMA VE SWIPE HESAPLAMASI
     -------------------------------------------------------------- */
     function setupCardGestures(card) {
       if (!card) return;
@@ -712,7 +729,6 @@
       let startTime = 0;
 
       function onStart(e) {
-        // Ses butonlarına tıklanırsa sürükleme başlatma
         if (e.target.closest('.btn-card-audio') || e.target.closest('.btn-card-plural-audio')) return;
 
         isDragging = true;
@@ -754,7 +770,7 @@
         const moveDistance = Math.hypot(currentX, currentY);
         const elapsedTime = Date.now() - startTime;
 
-        // Ekrana hafifçe dokunup çekildiyse (20px'e kadar esneme payı): KARTI ÇEVİR
+        // Kısa dokunma (Tap): Kartı arkasına çevir
         if (moveDistance < 20 && elapsedTime < 450) {
           resetCardPosition(card, likeStamp, dislikeStamp);
           toggleCardFlip();
@@ -799,7 +815,7 @@
     }
 
     /* -------------------------------------------------------------
-       7. SWIPE VE DESTE DÖNGÜSÜ
+       7. SWIPE MEKANİĞİ
     -------------------------------------------------------------- */
     function executeSwipe(direction) {
       if (!activeCardElement || state.queue.length === 0) return;
@@ -884,7 +900,7 @@
     }
 
     /* -------------------------------------------------------------
-       8. AKSİYON BUTONLARI & KLAVYE
+       8. BUTON DİNLERLEYİCİLERİ
     -------------------------------------------------------------- */
     document.getElementById("btn-header-back").addEventListener("click", returnToCategories);
     document.getElementById("btn-change-category").addEventListener("click", returnToCategories);
@@ -911,7 +927,7 @@
       updateUI();
     });
 
-    // Klavye
+    // Klavye Kısayolları
     window.addEventListener("keydown", (e) => {
       if (document.getElementById('study-screen').classList.contains('hidden')) return;
 
